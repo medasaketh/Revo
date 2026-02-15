@@ -1,8 +1,19 @@
+"use client";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/useUser";
+import { useEffect } from "react";
+
 export default function DashboardPage() {
-  return (
-    <div style={{ padding: 40 }}>
-      <h1>Dashboard</h1>
-      <p>User results will appear here</p>
-    </div>
-  );
+  const user = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user === null) {
+      router.push("/login");
+    }
+  }, [user]);
+
+  if (!user) return null;
+
+  return <h1>Dashboard</h1>;
 }
