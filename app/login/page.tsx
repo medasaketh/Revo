@@ -1,45 +1,61 @@
-// export default function LoginPage() {
-//   return (
-//     <div style={{ padding: 40 }}>
-//       <h1>Login Page</h1>
-//       <p>This will be login later</p>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import Navbar from "@/components/Nav";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-    });
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    setLoading(false);
 
-    if (!error) {
-      alert("Check your email for login link");
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Check your email for the login link.");
     }
   }
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Login</h1>
+    <div className="min-h-screen">
+      <Navbar />
 
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <div className="flex justify-center items-center pt-32 px-4">
+        <div className="w-full max-w-md bg-[#121212] border border-gray-800 rounded-2xl p-8">
+          
+          <h1 className="text-2xl font-semibold mb-2">
+            Welcome back
+          </h1>
 
-      <button onClick={handleLogin} style={{ marginTop: 20 }}>
-        Send Login Link
-      </button>
+          <p className="text-gray-400 text-sm mb-8">
+            Log in to continue your personal style journey.
+          </p>
+
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full mb-6 px-4 py-3 rounded-lg bg-black border border-gray-700 focus:outline-none focus:border-white"
+          />
+
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-gray-200 transition disabled:opacity-50"
+          >
+            {loading ? "Sending link..." : "Send login link"}
+          </button>
+
+          <p className="text-xs text-gray-500 mt-6 text-center">
+            We’ll never share your email.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
