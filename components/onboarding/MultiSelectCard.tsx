@@ -26,7 +26,7 @@ export function MultiSelectCard({
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-300 md:p-5",
+        "relative flex cursor-pointer flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-300 md:p-5",
         selected
           ? "border-[#D4C4A8]/50 bg-[#D4C4A8]/5"
           : "border-[#222222] bg-[#111111] hover:border-[#333333] hover:bg-[#161616]"

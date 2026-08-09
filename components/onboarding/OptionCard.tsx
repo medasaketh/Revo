@@ -26,7 +26,7 @@ export function OptionCard({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group relative w-full rounded-2xl border p-4 text-left transition-all duration-300 md:p-5",
+        "group relative w-full cursor-pointer rounded-2xl border p-4 text-left transition-all duration-300 md:p-5",
         selected
           ? "border-white/40 bg-white/5 shadow-[0_0_30px_rgba(255,255,255,0.05)]"
           : "border-[#222222] bg-[#111111] hover:bg-[#161616]",

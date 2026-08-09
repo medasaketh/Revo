@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Navbar from "@/components/Nav";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { ProgressBar } from "./ProgressBar";
 import { BottomNavigation } from "./BottomNavigation";
@@ -46,6 +49,24 @@ export function OnboardingFlow() {
     isLastInteractiveStep,
     showProgress,
   } = useOnboarding();
+
+  const { profile, user } = useAuth();
+
+  const questionScrollRef = useRef<HTMLDivElement>(null);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const nameFromProfile =
+      profile?.full_name || user?.user_metadata?.full_name || "";
+    if (nameFromProfile && !data.name) {
+      updateData("name", nameFromProfile);
+    }
+  }, [profile?.full_name, user, data.name, updateData]);
+
+  useEffect(() => {
+    questionScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    contentScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [currentStep.id]);
 
   const renderScreen = () => {
     switch (currentStep.id) {
@@ -103,60 +124,97 @@ export function OnboardingFlow() {
 
   const isWelcome = currentStep.id === "welcome";
   const isLoading = currentStep.id === "loading";
+  const isQuestionStep = !isWelcome && !isLoading;
 
   return (
-    <div className="relative min-h-screen bg-[#090909]">
+    <div className="relative flex h-dvh flex-col bg-[#090909]">
       {/* Ambient background glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#D4C4A8]/5 blur-[120px]" />
         <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-white/[0.02] blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-3xl flex-col px-5 py-8 md:px-8 md:py-12">
-        {/* Top bar */}
-        {!isWelcome && !isLoading && (
+      {/* Fixed top: navbar + progress */}
+      <header className="relative z-10 shrink-0">
+        <Navbar variant="onboarding" />
+
+        {showProgress && currentStep.stepNumber && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 space-y-4"
+            className="border-b border-[#222222] bg-[#090909]/95 px-5 py-4 backdrop-blur-sm md:px-8"
           >
-            <span className="text-sm font-semibold tracking-tight text-white">
-              Revo
-            </span>
-            {showProgress && currentStep.stepNumber && (
+            <div className="mx-auto max-w-3xl">
               <ProgressBar step={currentStep.stepNumber} />
-            )}
+            </div>
           </motion.div>
         )}
+      </header>
 
-        {/* Screen content */}
-        <div className="flex flex-1 flex-col">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={currentStep.id}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-1"
+      {/* Main content area */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        {isQuestionStep ? (
+          <>
+            {/* Scrollable questions only */}
+            <div
+              ref={questionScrollRef}
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
             >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+              <div className="mx-auto max-w-3xl px-5 py-6 md:px-8 md:py-8">
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentStep.id}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    {renderScreen()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
 
-        {/* Bottom navigation */}
-        {!isWelcome && !isLoading && (
-          <BottomNavigation
-            onBack={goBack}
-            onNext={goNext}
-            onSkip={isLastInteractiveStep ? skipToLoading : undefined}
-            showBack={!isFirstStep}
-            showSkip={isLastInteractiveStep}
-            nextLabel={isLastInteractiveStep ? "Finish" : "Continue"}
-          />
+            {/* Fixed bottom navigation */}
+            <footer className="shrink-0 border-t border-[#222222] bg-[#090909]/95 px-5 py-4 backdrop-blur-sm md:px-8">
+              <div className="mx-auto max-w-3xl">
+                <BottomNavigation
+                  onBack={goBack}
+                  onNext={goNext}
+                  onSkip={isLastInteractiveStep ? skipToLoading : undefined}
+                  showBack={!isFirstStep}
+                  showSkip={isLastInteractiveStep}
+                  nextLabel={isLastInteractiveStep ? "Finish" : "Continue"}
+                  className="border-t-0 pt-0"
+                />
+              </div>
+            </footer>
+          </>
+        ) : (
+          /* Welcome & loading — centered, scroll if needed */
+          <div
+            ref={contentScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto"
+          >
+            <div className="mx-auto flex min-h-full max-w-3xl flex-col px-5 py-8 md:px-8 md:py-12">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentStep.id}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-1 flex-col"
+                >
+                  {renderScreen()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         )}
       </div>
     </div>

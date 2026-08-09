@@ -97,8 +97,17 @@ export function useOnboarding() {
     setCurrentStepIndex(STEP_ORDER.indexOf("loading"));
   }, []);
 
-  const finishOnboarding = useCallback(() => {
+  const finishOnboarding = useCallback(async () => {
+    try {
+      const res = await fetch("/api/onboarding/complete", { method: "POST" });
+      if (!res.ok) {
+        console.warn("[onboarding] Complete API returned", res.status);
+      }
+    } catch {
+      console.warn("[onboarding] Complete API request failed");
+    }
     router.push("/dashboard");
+    router.refresh();
   }, [router]);
 
   return {
