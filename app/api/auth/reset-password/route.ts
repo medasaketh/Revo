@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { resetPasswordRequestSchema } from "@/schemas/auth";
+import { getSiteOrigin } from "@/lib/auth/redirect";
 import {
   successResponse,
   errorResponse,
@@ -21,14 +22,16 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     if (parsed.data.action === "request") {
-      const origin = request.nextUrl.origin;
+      const origin = getSiteOrigin(request.nextUrl.origin);
+      const redirectTo = `${origin}/auth/callback?next=/reset-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(
         parsed.data.email,
-        { redirectTo: `${origin}/auth/callback?next=/reset-password` }
+        { redirectTo }
       );
 
       if (error) {
+        console.error("[reset-password] Email request failed:", error.message);
         const mapped = mapAuthError(error);
         return errorResponse(mapped.code, mapped.message, mapped.status);
       }
@@ -38,7 +41,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // action === "update"
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return errorResponse(
         "UNAUTHORIZED",
-        "Your reset session has expired. Please request a new link.",
+        "Your reset link has expired. Please request a new one.",
         401
       );
     }
@@ -56,12 +58,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      console.error("[reset-password] Update failed:", error.message);
       const mapped = mapAuthError(error);
       return errorResponse(mapped.code, mapped.message, mapped.status);
     }
 
-    return successResponse("Password updated successfully.");
-  } catch {
+    // Sign out so user signs in fresh with the new password
+    await supabase.auth.signOut();
+
+    return successResponse("Password updated successfully. You can sign in now.");
+  } catch (err) {
+    console.error("[reset-password] Unexpected error:", err);
     return handleUnknownError();
   }
 }

@@ -35,8 +35,11 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     const protectedRoutes = ["/dashboard", "/profile", "/settings", "/onboarding"];
-    const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+    const authRoutes = ["/login", "/register", "/forgot-password"];
     const appRoutesRequiringOnboarding = ["/dashboard", "/profile", "/settings"];
+    const isResetPassword =
+      pathname === "/reset-password" ||
+      pathname.startsWith("/reset-password/");
 
     const isProtected = protectedRoutes.some(
       (route) => pathname === route || pathname.startsWith(`${route}/`)
@@ -71,6 +74,11 @@ export async function updateSession(request: NextRequest) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = onboardingComplete ? "/dashboard" : "/onboarding";
         return NextResponse.redirect(redirectUrl);
+      }
+
+      // Allow recovery session on reset-password (do not redirect to dashboard)
+      if (isResetPassword) {
+        return supabaseResponse;
       }
 
       if (onboardingComplete && pathname === "/onboarding") {
