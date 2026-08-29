@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { HeroCard } from "@/components/dashboard/HeroCard";
@@ -13,6 +14,7 @@ import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
 import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
 import { SectionHeader } from "@/components/dashboard/DashboardCard";
 import { staggerContainer } from "@/components/dashboard/motion";
+import { scrollToDashboardSection } from "@/lib/navigation/scroll";
 import type { DashboardData } from "@/types/dashboard";
 
 interface DashboardContentProps {
@@ -20,6 +22,17 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ data }: DashboardContentProps) {
+  useEffect(() => {
+    const sectionId = window.location.hash.replace("#", "");
+    if (!sectionId) return;
+
+    const timer = window.setTimeout(() => {
+      scrollToDashboardSection(sectionId);
+    }, 100);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <motion.div
       variants={staggerContainer}
@@ -36,15 +49,17 @@ export function DashboardContent({ data }: DashboardContentProps) {
         <QuickActionsGrid actions={data.quickActions} />
       </section>
 
-      <div className="grid gap-8 xl:grid-cols-5">
-        <div className="xl:col-span-3">
-          <RecommendationCard recommendation={data.recommendation} />
+      <section id="wardrobe" className="scroll-mt-28">
+        <div className="grid gap-8 xl:grid-cols-5">
+          <div className="xl:col-span-3">
+            <RecommendationCard recommendation={data.recommendation} />
+          </div>
+          <div className="space-y-8 xl:col-span-2">
+            <WardrobeCard wardrobe={data.wardrobe} />
+            <DailyTipCard tip={data.dailyTip} />
+          </div>
         </div>
-        <div className="space-y-8 xl:col-span-2">
-          <WardrobeCard wardrobe={data.wardrobe} />
-          <DailyTipCard tip={data.dailyTip} />
-        </div>
-      </div>
+      </section>
 
       <AIChatCard
         placeholder={data.chatPlaceholder}

@@ -1,4 +1,5 @@
 import type { DashboardData } from "@/types/dashboard";
+import { appNavigation } from "@/constants/navigation";
 
 export const mockDashboardData: DashboardData = {
   user: {
@@ -185,43 +186,10 @@ export const mockDashboardData: DashboardData = {
     content:
       "Light neutral colors reflect heat and create a cleaner silhouette during summer.",
   },
-  navigation: [
-    { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "home" },
-    { id: "wardrobe", label: "Wardrobe", href: "#wardrobe", icon: "shirt" },
-    { id: "ai-stylist", label: "AI Stylist", href: "#ai-chat", icon: "sparkles" },
-    {
-      id: "outfit-judge",
-      label: "Outfit Judge",
-      href: "#outfit-judge",
-      icon: "camera",
-    },
-    {
-      id: "recommendations",
-      label: "Recommendations",
-      href: "#shopping",
-      icon: "shopping-bag",
-    },
-    { id: "saved", label: "Saved Looks", href: "#saved", icon: "heart" },
-    { id: "profile", label: "Profile", href: "/profile", icon: "user" },
-    { id: "settings", label: "Settings", href: "/settings", icon: "settings" },
-  ],
+  navigation: appNavigation,
 };
 
-export function getGreetingLabel(period: DashboardData["greeting"]["period"]): string {
-  const labels = {
-    morning: "Good Morning",
-    afternoon: "Good Afternoon",
-    evening: "Good Evening",
-  };
-  return labels[period];
-}
-
-export function getGreetingPeriod(): DashboardData["greeting"]["period"] {
-  const hour = new Date().getHours();
-  if (hour < 12) return "morning";
-  if (hour < 17) return "afternoon";
-  return "evening";
-}
+export { getGreetingLabel, getGreetingPeriod } from "@/lib/datetime/greeting";
 
 export function mergeDashboardUser(
   data: DashboardData,
@@ -230,9 +198,5 @@ export function mergeDashboardUser(
   return {
     ...data,
     user: { ...data.user, ...overrides },
-    greeting: {
-      ...data.greeting,
-      period: getGreetingPeriod(),
-    },
   };
 }

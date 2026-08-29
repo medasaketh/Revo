@@ -34,9 +34,9 @@ export async function updateSession(request: NextRequest) {
 
     const pathname = request.nextUrl.pathname;
 
-    const protectedRoutes = ["/dashboard", "/profile", "/settings", "/onboarding"];
+    const protectedRoutes = ["/dashboard", "/profile", "/settings", "/onboarding", "/wardrobe"];
     const authRoutes = ["/login", "/register", "/forgot-password"];
-    const appRoutesRequiringOnboarding = ["/dashboard", "/profile", "/settings"];
+    const appRoutesRequiringOnboarding = ["/dashboard", "/profile", "/settings", "/wardrobe"];
     const isResetPassword =
       pathname === "/reset-password" ||
       pathname.startsWith("/reset-password/");

@@ -37,25 +37,25 @@ const categories = [
 export function WardrobeCard({ wardrobe }: WardrobeCardProps) {
   if (wardrobe.isEmpty) {
     return (
-      <motion.div {...fadeInUp} id="wardrobe">
+      <motion.div {...fadeInUp}>
         <EmptyState
           title="Let's build your digital wardrobe."
           description="Add your first item and Revo will start learning your style."
           buttonLabel="Add First Clothing Item"
-          href="#wardrobe"
+          href="/wardrobe"
         />
       </motion.div>
     );
   }
 
   return (
-    <motion.div {...fadeInUp} transition={{ duration: 0.5, delay: 0.2 }} id="wardrobe">
+    <motion.div {...fadeInUp} transition={{ duration: 0.5, delay: 0.2 }}>
       <DashboardCard>
         <SectionHeader
           title="Wardrobe Overview"
           subtitle="Your digital closet at a glance"
           action={
-            <Link href="#wardrobe">
+            <Link href="/wardrobe">
               <Button variant="ghost" size="sm">
                 Manage <ArrowRight className="h-4 w-4" />
               </Button>

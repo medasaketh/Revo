@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Bell, Menu, User } from "lucide-react";
-import { getGreetingLabel } from "@/constants/mockDashboard";
 import { useDashboardLayout } from "@/components/dashboard/DashboardShell";
+import { useLiveDateTime } from "@/hooks/useLiveDateTime";
 import type { DashboardData } from "@/types/dashboard";
 
 interface TopBarProps {
@@ -13,11 +13,8 @@ interface TopBarProps {
 
 export function TopBar({ user, greeting }: TopBarProps) {
   const { openMobileMenu } = useDashboardLayout();
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const { greeting: greetingLabel, dateLabel, timeLabel, timeZoneLabel } =
+    useLiveDateTime();
 
   return (
     <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -32,15 +29,27 @@ export function TopBar({ user, greeting }: TopBarProps) {
         </button>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
-            {getGreetingLabel(greeting.period)}, {user.name}{" "}
-            <span className="inline-block animate-[wave_2s_ease-in-out_infinite]">👋</span>
+            {greetingLabel}, {user.name}{" "}
+            <span className="inline-block animate-[wave_2s_ease-in-out_infinite]">
+              👋
+            </span>
           </h1>
-          <p className="mt-2 text-sm text-gray-500 sm:text-base">{greeting.subtitle}</p>
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+            {greeting.subtitle}
+          </p>
+          <p className="mt-2 text-xs text-gray-600 md:hidden">
+            {dateLabel} · {timeLabel} ({timeZoneLabel})
+          </p>
         </div>
       </div>
 
       <div className="flex items-center gap-3 self-end sm:self-start">
-        <p className="hidden text-sm text-gray-500 md:block">{today}</p>
+        <div className="hidden text-right md:block">
+          <p className="text-sm text-white">{dateLabel}</p>
+          <p className="text-xs text-gray-500">
+            {timeLabel} · {timeZoneLabel}
+          </p>
+        </div>
         <button
           type="button"
           className="relative rounded-xl border border-[#1f1f1f] bg-[#111111] p-2.5 text-gray-400 transition-colors hover:border-[#333] hover:text-white"

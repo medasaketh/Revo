@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useHash } from "@/hooks/useHash";
+import { isNavItemActive } from "@/constants/navigation";
+import { parseNavHref, scrollToDashboardSection } from "@/lib/navigation/scroll";
 import type { NavItem } from "@/types/dashboard";
 
 const iconMap = {
@@ -48,9 +51,14 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const hash = useHash();
   const { user, profile, signOut } = useAuth();
 
-  const displayName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "User";
+  const displayName =
+    profile?.full_name?.trim() ??
+    user?.user_metadata?.full_name?.trim() ??
+    user?.email?.split("@")[0] ??
+    "User";
   const initials =
     profile?.full_name
       ?.split(" ")
@@ -91,16 +99,22 @@ export function Sidebar({
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navigation.map((item) => {
           const Icon = iconMap[item.icon as keyof typeof iconMap] ?? Home;
-          const isActive =
-            item.href.startsWith("/") &&
-            !item.href.startsWith("/#") &&
-            (pathname === item.href || pathname.startsWith(`${item.href}/`));
+          const isActive = isNavItemActive(pathname, item.href, hash);
+
+          const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+            const { path, hash: sectionHash } = parseNavHref(item.href);
+            if (sectionHash && pathname === path) {
+              event.preventDefault();
+              scrollToDashboardSection(sectionHash);
+            }
+            onCloseMobile();
+          };
 
           return (
             <Link
               key={item.id}
               href={item.href}
-              onClick={onCloseMobile}
+              onClick={handleClick}
               className={cn(
                 "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive

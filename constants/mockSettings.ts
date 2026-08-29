@@ -1,0 +1,292 @@
+import type { SettingsData } from "@/types/settings";
+
+export const mockSettingsData: SettingsData = {
+  categories: [
+    { id: "general", label: "General", icon: "settings" },
+    { id: "account", label: "Account", icon: "user" },
+    { id: "notifications", label: "Notifications", icon: "bell" },
+    { id: "privacy", label: "Privacy", icon: "shield" },
+    { id: "appearance", label: "Appearance", icon: "palette" },
+    { id: "ai", label: "AI Preferences", icon: "sparkles" },
+    { id: "security", label: "Security", icon: "lock" },
+    { id: "data", label: "Data & Privacy", icon: "database" },
+    { id: "support", label: "Support", icon: "help" },
+    { id: "about", label: "About", icon: "info" },
+  ],
+  general: {
+    language: "en",
+    timezone: "Asia/Kolkata",
+    units: "metric",
+    temperature: "celsius",
+    dateFormat: "dmy",
+    theme: "dark",
+    languageOptions: [
+      { value: "en", label: "English" },
+      { value: "hi", label: "Hindi" },
+      { value: "te", label: "Telugu" },
+    ],
+    timezoneOptions: [
+      { value: "Asia/Kolkata", label: "India Standard Time (IST)" },
+      { value: "America/New_York", label: "Eastern Time (ET)" },
+      { value: "Europe/London", label: "Greenwich Mean Time (GMT)" },
+    ],
+    unitsOptions: [
+      { value: "metric", label: "Metric (cm, kg)" },
+      { value: "imperial", label: "Imperial (ft, lb)" },
+    ],
+    temperatureOptions: [
+      { value: "celsius", label: "°C Celsius" },
+      { value: "fahrenheit", label: "°F Fahrenheit" },
+    ],
+    dateFormatOptions: [
+      { value: "dmy", label: "DD/MM/YYYY" },
+      { value: "mdy", label: "MM/DD/YYYY" },
+      { value: "ymd", label: "YYYY-MM-DD" },
+    ],
+    themeOptions: [
+      { value: "light", label: "Light" },
+      { value: "dark", label: "Dark" },
+      { value: "system", label: "System" },
+    ],
+  },
+  account: {
+    name: "Meda Saketh",
+    email: "saketh@revo.app",
+  },
+  notifications: [
+    {
+      id: "email",
+      label: "Email Notifications",
+      description: "Receive updates and alerts via email.",
+      enabled: true,
+    },
+    {
+      id: "push",
+      label: "Push Notifications",
+      description: "Get instant alerts on your device.",
+      enabled: true,
+    },
+    {
+      id: "recommendations",
+      label: "Recommendation Alerts",
+      description: "Daily outfit and style suggestions.",
+      enabled: true,
+    },
+    {
+      id: "weather",
+      label: "Weather Alerts",
+      description: "Weather-based style updates for your city.",
+      enabled: true,
+    },
+    {
+      id: "shopping",
+      label: "Shopping Alerts",
+      description: "New product picks matching your wardrobe.",
+      enabled: false,
+    },
+    {
+      id: "weekly",
+      label: "Weekly Fashion Summary",
+      description: "A recap of your style activity each week.",
+      enabled: true,
+    },
+    {
+      id: "tips",
+      label: "AI Tips",
+      description: "Personalized fashion tips from Revo AI.",
+      enabled: true,
+    },
+  ],
+  privacy: [
+    {
+      id: "ai-images",
+      label: "Use uploaded images for AI improvement",
+      description: "Allow Revo to use your photos to improve recommendation accuracy.",
+      enabled: true,
+    },
+    {
+      id: "analytics",
+      label: "Allow anonymous analytics",
+      description: "Help us improve Revo with anonymized usage data.",
+      enabled: true,
+    },
+    {
+      id: "wardrobe-history",
+      label: "Store wardrobe history",
+      description: "Keep a record of wardrobe changes over time.",
+      enabled: true,
+    },
+    {
+      id: "chat-history",
+      label: "Save AI chat history",
+      description: "Store conversations with your AI stylist.",
+      enabled: true,
+    },
+    {
+      id: "personalized",
+      label: "Personalized recommendations",
+      description: "Use your profile data to tailor suggestions.",
+      enabled: true,
+    },
+  ],
+  appearance: {
+    theme: "dark",
+    accentColor: "champagne",
+    cardDensity: "comfortable",
+    animations: true,
+    compactMode: false,
+    fontSize: "medium",
+    themeOptions: [
+      { value: "light", label: "Light" },
+      { value: "dark", label: "Dark" },
+      { value: "system", label: "System" },
+    ],
+    accentOptions: [
+      { value: "champagne", label: "Champagne Gold" },
+      { value: "white", label: "White" },
+      { value: "violet", label: "Violet" },
+    ],
+    densityOptions: [
+      { value: "compact", label: "Compact" },
+      { value: "comfortable", label: "Comfortable" },
+      { value: "spacious", label: "Spacious" },
+    ],
+    fontSizeOptions: [
+      { value: "small", label: "Small" },
+      { value: "medium", label: "Medium" },
+      { value: "large", label: "Large" },
+    ],
+  },
+  aiPreferences: [
+    {
+      id: "detail",
+      label: "Recommendation Detail",
+      description: "How detailed AI outfit explanations should be.",
+      value: 1,
+      options: [
+        { value: "0", label: "Basic" },
+        { value: "1", label: "Balanced" },
+        { value: "2", label: "Detailed" },
+      ],
+    },
+    {
+      id: "weather",
+      label: "Weather Importance",
+      description: "How much weather influences recommendations.",
+      value: 2,
+      options: [
+        { value: "0", label: "Low" },
+        { value: "1", label: "Medium" },
+        { value: "2", label: "High" },
+      ],
+    },
+    {
+      id: "budget",
+      label: "Budget Priority",
+      description: "How strictly to match your budget preferences.",
+      value: 1,
+      options: [
+        { value: "0", label: "Low" },
+        { value: "1", label: "Medium" },
+        { value: "2", label: "High" },
+      ],
+    },
+    {
+      id: "sustainability",
+      label: "Sustainability Preference",
+      description: "Prioritize sustainable and ethical brands.",
+      value: 1,
+      options: [
+        { value: "0", label: "Low" },
+        { value: "1", label: "Medium" },
+        { value: "2", label: "High" },
+      ],
+    },
+    {
+      id: "creativity",
+      label: "Creativity",
+      description: "How experimental outfit suggestions should be.",
+      value: 1,
+      options: [
+        { value: "0", label: "Conservative" },
+        { value: "1", label: "Balanced" },
+        { value: "2", label: "Experimental" },
+      ],
+    },
+  ],
+  security: {
+    twoFactorEnabled: false,
+    sessions: [
+      {
+        id: "s1",
+        device: "Windows · Chrome",
+        location: "Hyderabad, India",
+        lastActive: "Active now",
+        current: true,
+      },
+      {
+        id: "s2",
+        device: "iPhone · Safari",
+        location: "Hyderabad, India",
+        lastActive: "2 days ago",
+        current: false,
+      },
+      {
+        id: "s3",
+        device: "MacBook · Arc",
+        location: "Hyderabad, India",
+        lastActive: "1 week ago",
+        current: false,
+      },
+    ],
+  },
+  dataActions: [
+    {
+      id: "download",
+      label: "Download My Data",
+      description: "Export all your Revo data as a ZIP file.",
+      variant: "default",
+    },
+    {
+      id: "export-wardrobe",
+      label: "Export Wardrobe",
+      description: "Download your digital wardrobe as CSV.",
+      variant: "default",
+    },
+    {
+      id: "delete-chat",
+      label: "Delete AI History",
+      description: "Permanently remove all AI chat conversations.",
+      variant: "danger",
+    },
+    {
+      id: "delete-wardrobe",
+      label: "Delete Wardrobe",
+      description: "Remove all wardrobe items from Revo.",
+      variant: "danger",
+    },
+    {
+      id: "delete-recs",
+      label: "Delete Recommendations",
+      description: "Clear all generated outfit recommendations.",
+      variant: "danger",
+    },
+    {
+      id: "delete-account",
+      label: "Delete Account",
+      description: "Permanently delete your Revo account and all data.",
+      variant: "danger",
+    },
+  ],
+  support: {
+    links: [
+      { id: "faq", label: "FAQ", href: "#" },
+      { id: "contact", label: "Contact Support", href: "#" },
+      { id: "bug", label: "Report Bug", href: "#" },
+      { id: "feature", label: "Request Feature", href: "#" },
+      { id: "privacy", label: "Privacy Policy", href: "#" },
+      { id: "terms", label: "Terms of Service", href: "#" },
+    ],
+    version: "Revo v0.1.0",
+  },
+};

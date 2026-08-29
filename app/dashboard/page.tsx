@@ -25,17 +25,26 @@ export default async function DashboardPage() {
     .maybeSingle();
 
   const profile = profileData as Profile | null;
-  const firstName =
-    profile?.full_name?.split(" ")[0] ??
-    user.email?.split("@")[0] ??
+  const displayName =
+    profile?.full_name?.trim() ||
+    user.user_metadata?.full_name?.trim() ||
+    user.email?.split("@")[0] ||
     mockDashboardData.user.name;
+
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const dashboardData = mergeDashboardUser(mockDashboardData, {
     id: user.id,
-    name: firstName,
+    name: displayName,
     email: profile?.email ?? user.email ?? mockDashboardData.user.email,
     avatarUrl: profile?.avatar_url ?? null,
-    initials: firstName.slice(0, 2).toUpperCase(),
+    initials,
   });
 
   return <DashboardContent data={dashboardData} />;
