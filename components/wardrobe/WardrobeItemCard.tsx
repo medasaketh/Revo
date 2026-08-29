@@ -2,51 +2,109 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import type { WardrobeItem } from "@/types/wardrobe";
+import { Heart, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { WardrobeItem, WardrobeViewMode } from "@/types/wardrobe";
 
 interface WardrobeItemCardProps {
   item: WardrobeItem;
   index: number;
+  view: WardrobeViewMode;
+  onSelect: (item: WardrobeItem) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
-export function WardrobeItemCard({ item, index }: WardrobeItemCardProps) {
+export function WardrobeItemCard({
+  item,
+  index,
+  view,
+  onSelect,
+  onToggleFavorite,
+}: WardrobeItemCardProps) {
+  const isList = view === "list";
+  const isCompact = view === "compact";
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.04 }}
-      whileHover={{ y: -4 }}
-      className="group overflow-hidden rounded-3xl border border-[#222222] bg-[#111111] transition-colors hover:border-[#333]"
+      transition={{ duration: 0.35, delay: index * 0.03 }}
+      whileHover={{ y: isList ? 0 : -4 }}
+      onClick={() => onSelect(item)}
+      className={cn(
+        "group cursor-pointer overflow-hidden rounded-2xl border border-[#202020] bg-[#111111] transition-colors hover:border-[#333]",
+        isList && "flex gap-4 p-3"
+      )}
     >
-      <div className="relative aspect-[4/5] overflow-hidden">
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          isList ? "h-24 w-20 shrink-0 rounded-xl" : "aspect-[4/5]",
+          isCompact && "aspect-square"
+        )}
+      >
         <Image
           src={item.imageUrl}
           alt={item.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) 50vw, 240px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-        <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-white backdrop-blur-sm">
-          {item.category}
-        </span>
+        {!isList && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(item.id);
+          }}
+          className="absolute right-2 top-2 rounded-full bg-black/40 p-1.5 backdrop-blur-sm transition-colors hover:bg-black/60"
+          aria-label={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Heart
+            className={cn(
+              "h-3.5 w-3.5",
+              item.isFavorite ? "fill-red-400 text-red-400" : "text-white"
+            )}
+          />
+        </button>
       </div>
 
-      <div className="p-4">
-        <p className="text-xs text-gray-500">{item.brand}</p>
-        <h3 className="mt-1 font-medium text-white">{item.name}</h3>
-        <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-            <span
-              className="h-2.5 w-2.5 rounded-full ring-1 ring-white/10"
-              style={{ backgroundColor: item.colorHex }}
-            />
-            {item.color}
-          </span>
-          <span className="text-xs text-gray-600">
-            Worn {item.timesWorn}x
-          </span>
-        </div>
+      <div className={cn("p-3", isList && "flex flex-1 flex-col justify-center py-0")}>
+        {!isCompact && (
+          <p className="text-[10px] uppercase tracking-wider text-gray-500">
+            {item.category}
+          </p>
+        )}
+        <h3
+          className={cn(
+            "font-medium text-white",
+            isCompact ? "mt-1 truncate text-xs" : "mt-0.5 text-sm"
+          )}
+        >
+          {item.name}
+        </h3>
+        {!isCompact && (
+          <>
+            <p className="text-xs text-gray-500">{item.brand}</p>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: item.colorHex }}
+                />
+                {item.color}
+              </span>
+              {item.aiCompatibilityScore && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] text-[#D4C4A8]">
+                  <Sparkles className="h-3 w-3" />
+                  {item.aiCompatibilityScore}%
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </motion.article>
   );
