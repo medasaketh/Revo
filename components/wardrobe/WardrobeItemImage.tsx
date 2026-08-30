@@ -1,19 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { DEFAULT_WARDROBE_IMAGE } from "@/lib/wardrobe/mappers";
-
-const NEXT_IMAGE_HOSTS = new Set(["images.unsplash.com"]);
-
-function isNextImageHost(url: string): boolean {
-  try {
-    return NEXT_IMAGE_HOSTS.has(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
 
 interface WardrobeItemImageProps {
   src: string;
@@ -26,40 +15,45 @@ export function WardrobeItemImage({
   src,
   alt,
   className,
-  sizes = "(max-width: 640px) 50vw, 240px",
 }: WardrobeItemImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src || DEFAULT_WARDROBE_IMAGE);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     setCurrentSrc(src || DEFAULT_WARDROBE_IMAGE);
+    setFailed(false);
   }, [src]);
 
   const handleError = () => {
     if (currentSrc !== DEFAULT_WARDROBE_IMAGE) {
       setCurrentSrc(DEFAULT_WARDROBE_IMAGE);
+      return;
     }
+    setFailed(true);
   };
 
-  if (isNextImageHost(currentSrc)) {
+  if (failed) {
     return (
-      <Image
-        src={currentSrc}
-        alt={alt}
-        fill
-        className={className}
-        sizes={sizes}
-        onError={handleError}
-      />
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center bg-[#1a1a1a] text-[10px] uppercase tracking-wider text-gray-500",
+          className
+        )}
+        aria-label={alt}
+      >
+        No image
+      </div>
     );
   }
 
   return (
-    // User-provided URLs can be any host — use native img to avoid next/image allowlist errors.
+    // Native img avoids next/image optimizer issues with external URLs.
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={currentSrc}
       alt={alt}
       className={cn("absolute inset-0 h-full w-full object-cover", className)}
+      loading="lazy"
       onError={handleError}
     />
   );

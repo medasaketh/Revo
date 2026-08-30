@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, ImagePlus, Upload, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { DEFAULT_WARDROBE_IMAGE } from "@/lib/wardrobe/mappers";
+import { WardrobeImagePicker } from "@/components/wardrobe/WardrobeImagePicker";
+import { WardrobeItemImage } from "@/components/wardrobe/WardrobeItemImage";
 import type { WardrobeItemInput } from "@/schemas/wardrobe";
 import type { WardrobeFilterOption, WardrobeItem, WardrobePageData } from "@/types/wardrobe";
 
@@ -47,9 +50,7 @@ function itemToForm(item: WardrobeItem): ItemFormValues {
     brand: item.brand,
     color: item.color,
     colorHex: item.colorHex,
-    imageUrl: item.imageUrl.startsWith("https://images.unsplash.com/photo-1523381295211")
-      ? ""
-      : item.imageUrl,
+    imageUrl: item.imageUrl === DEFAULT_WARDROBE_IMAGE ? "" : item.imageUrl,
     fabric: item.fabric ?? "",
     price: item.price ? String(item.price) : "",
     purchaseDate: item.purchaseDate ?? "",
@@ -196,38 +197,11 @@ export function ItemFormModal({
 
             <div className="flex-1 overflow-y-auto p-6">
               {step === 0 && (
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-3xl border border-dashed border-[#D4C4A8]/30 bg-[#D4C4A8]/5">
-                      <ImagePlus className="h-10 w-10 text-[#D4C4A8]" />
-                    </div>
-                    <p className="mt-4 text-sm text-gray-400">
-                      Photo upload coming soon — paste an image URL for now
-                    </p>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs text-gray-500">
-                      Image URL (optional)
-                    </label>
-                    <Input
-                      value={form.imageUrl}
-                      onChange={(e) =>
-                        setForm((p) => ({ ...p, imageUrl: e.target.value }))
-                      }
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div className="flex justify-center gap-2">
-                    <Button variant="secondary" size="sm" disabled>
-                      <Upload className="h-4 w-4" />
-                      Upload
-                    </Button>
-                    <Button variant="secondary" size="sm" disabled>
-                      <Camera className="h-4 w-4" />
-                      Camera
-                    </Button>
-                  </div>
-                </div>
+                <WardrobeImagePicker
+                  value={form.imageUrl}
+                  onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
+                  disabled={saving}
+                />
               )}
 
               {step === 1 && (
@@ -380,8 +354,12 @@ export function ItemFormModal({
 
               {step === 4 && (
                 <div className="rounded-2xl border border-[#202020] bg-[#0a0a0a] p-5 text-center">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#D4C4A8]/10">
-                    <ImagePlus className="h-8 w-8 text-[#D4C4A8]" />
+                  <div className="relative mx-auto mb-4 h-28 w-24 overflow-hidden rounded-2xl">
+                    <WardrobeItemImage
+                      src={form.imageUrl || DEFAULT_WARDROBE_IMAGE}
+                      alt={form.name || "New item"}
+                      sizes="96px"
+                    />
                   </div>
                   <p className="font-medium text-white">
                     {form.name || "New Item"}

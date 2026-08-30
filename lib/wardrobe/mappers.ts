@@ -1,7 +1,7 @@
 import type { WardrobeItem, WardrobePageData, WardrobeStatCard } from "@/types/wardrobe";
 
 export const DEFAULT_WARDROBE_IMAGE =
-  "https://images.unsplash.com/photo-1523381295211-2883d63de466?w=400&h=500&fit=crop";
+  "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop";
 
 export interface WardrobeItemRow {
   id: string;
@@ -37,6 +37,13 @@ function formatLastWorn(lastWornAt: string | null, timesWorn: number): string {
   return new Date(lastWornAt).toLocaleDateString();
 }
 
+/** Replace broken/dead placeholder URLs stored in older rows. */
+function resolveImageUrl(imageUrl: string | null): string {
+  if (!imageUrl) return DEFAULT_WARDROBE_IMAGE;
+  if (imageUrl.includes("photo-1523381295211")) return DEFAULT_WARDROBE_IMAGE;
+  return imageUrl;
+}
+
 export function mapWardrobeRow(row: WardrobeItemRow): WardrobeItem {
   return {
     id: row.id,
@@ -45,7 +52,7 @@ export function mapWardrobeRow(row: WardrobeItemRow): WardrobeItem {
     category: row.category as WardrobeItem["category"],
     color: row.color ?? "",
     colorHex: row.color_hex ?? "#888888",
-    imageUrl: row.image_url || DEFAULT_WARDROBE_IMAGE,
+    imageUrl: resolveImageUrl(row.image_url),
     timesWorn: row.times_worn ?? 0,
     lastWorn: formatLastWorn(row.last_worn_at, row.times_worn ?? 0),
     isFavorite: row.is_favorite ?? false,
