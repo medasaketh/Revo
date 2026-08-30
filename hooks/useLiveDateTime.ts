@@ -16,18 +16,34 @@ interface LiveDateTime {
   timeLabel: string;
   timeZoneLabel: string;
   timeZone: string;
+  isReady: boolean;
 }
 
+const PLACEHOLDER: LiveDateTime = {
+  greeting: "Hello",
+  period: "morning",
+  dateLabel: "",
+  timeLabel: "",
+  timeZoneLabel: "",
+  timeZone: "UTC",
+  isReady: false,
+};
+
 export function useLiveDateTime(timeZone?: string): LiveDateTime {
-  const resolvedTimeZone = timeZone ?? getBrowserTimeZone();
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   return useMemo(() => {
+    if (!now) {
+      return PLACEHOLDER;
+    }
+
+    const resolvedTimeZone = timeZone ?? getBrowserTimeZone();
     const period = getGreetingPeriod(now, resolvedTimeZone);
     const { dateLabel, timeLabel, timeZoneLabel } = formatLiveDateTime(
       now,
@@ -41,6 +57,7 @@ export function useLiveDateTime(timeZone?: string): LiveDateTime {
       timeLabel,
       timeZoneLabel,
       timeZone: resolvedTimeZone,
+      isReady: true,
     };
-  }, [now, resolvedTimeZone]);
+  }, [now, timeZone]);
 }

@@ -1,5 +1,5 @@
 import type { WardrobeItem, WardrobePageData, WardrobeStatCard } from "@/types/wardrobe";
-import type { WardrobeStats } from "@/types/dashboard";
+import type { FashionInsight, WardrobeStats } from "@/types/dashboard";
 
 export const DEFAULT_WARDROBE_IMAGE =
   "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop";
@@ -207,6 +207,18 @@ export function buildDashboardWardrobeStats(items: WardrobeItem[]): WardrobeStat
   };
 }
 
+/** Color of the wardrobe item worn the most (by times_worn). */
+export function getMostWornColor(items: WardrobeItem[]): string {
+  const wornItems = items.filter((item) => item.timesWorn > 0 && item.color);
+
+  if (wornItems.length === 0) {
+    return "—";
+  }
+
+  const topItem = [...wornItems].sort((a, b) => b.timesWorn - a.timesWorn)[0];
+  return topItem?.color ?? "—";
+}
+
 export function buildWardrobeInsights(items: WardrobeItem[]) {
   if (items.length === 0) {
     return [
@@ -217,14 +229,10 @@ export function buildWardrobeInsights(items: WardrobeItem[]) {
     ];
   }
 
-  const colorCounts = new Map<string, number>();
   const brandCounts = new Map<string, number>();
   const categoryCounts = new Map<string, number>();
 
   for (const item of items) {
-    if (item.color) {
-      colorCounts.set(item.color, (colorCounts.get(item.color) ?? 0) + 1);
-    }
     if (item.brand) {
       brandCounts.set(item.brand, (brandCounts.get(item.brand) ?? 0) + 1);
     }
@@ -234,8 +242,7 @@ export function buildWardrobeInsights(items: WardrobeItem[]) {
     );
   }
 
-  const mostWornColor =
-    [...colorCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+  const mostWornColor = getMostWornColor(items);
   const favoriteBrand =
     [...brandCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
   const leastUsedCategory =
@@ -252,4 +259,27 @@ export function buildWardrobeInsights(items: WardrobeItem[]) {
     { id: "i3", label: "Items Not Worn", value: String(neverWorn) },
     { id: "i4", label: "Favorite Brand", value: favoriteBrand },
   ];
+}
+
+/** Sync live wardrobe-derived values into dashboard insight cards. */
+export function buildDashboardInsights(
+  items: WardrobeItem[],
+  baseInsights: FashionInsight[],
+  healthProgress: number
+): FashionInsight[] {
+  const mostWornColor = getMostWornColor(items);
+
+  return baseInsights.map((insight) => {
+    if (insight.id === "color") {
+      return { ...insight, value: mostWornColor };
+    }
+    if (insight.id === "completeness") {
+      return {
+        ...insight,
+        value: `${healthProgress}%`,
+        progress: healthProgress,
+      };
+    }
+    return insight;
+  });
 }

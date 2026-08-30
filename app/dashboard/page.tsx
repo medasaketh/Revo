@@ -6,7 +6,8 @@ import {
   mergeDashboardUser,
 } from "@/constants/mockDashboard";
 import { getWardrobeItems } from "@/lib/wardrobe/service";
-import { buildDashboardWardrobeStats, EMPTY_DASHBOARD_WARDROBE_STATS } from "@/lib/wardrobe/mappers";
+import { buildDashboardWardrobeStats, buildDashboardInsights, EMPTY_DASHBOARD_WARDROBE_STATS } from "@/lib/wardrobe/mappers";
+import type { WardrobeItem } from "@/types/wardrobe";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import type { Profile } from "@/types/database";
 
@@ -52,17 +53,24 @@ export default async function DashboardPage() {
 
   const db = createAdminClient() ?? supabase;
   let wardrobeStats = EMPTY_DASHBOARD_WARDROBE_STATS;
+  let wardrobeItems: WardrobeItem[] = [];
+  let insights = dashboardData.insights;
 
   try {
-    const items = await getWardrobeItems(db, user.id);
-    wardrobeStats = buildDashboardWardrobeStats(items);
+    wardrobeItems = await getWardrobeItems(db, user.id);
+    wardrobeStats = buildDashboardWardrobeStats(wardrobeItems);
+    insights = buildDashboardInsights(
+      wardrobeItems,
+      dashboardData.insights,
+      wardrobeStats.healthProgress
+    );
   } catch (err) {
     console.error("[dashboard] Failed to load wardrobe stats:", err);
   }
 
   return (
     <DashboardContent
-      data={{ ...dashboardData, wardrobe: wardrobeStats }}
+      data={{ ...dashboardData, wardrobe: wardrobeStats, insights }}
     />
   );
 }

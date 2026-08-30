@@ -106,7 +106,7 @@ export const mockDashboardData: DashboardData = {
     healthProgress: 0,
   },
   insights: [
-    { id: "color", label: "Most Worn Color", value: "Black", type: "text" },
+    { id: "color", label: "Most Worn Color", value: "—", type: "text" },
     { id: "style", label: "Most Worn Style", value: "Minimal", type: "text" },
     {
       id: "completeness",
