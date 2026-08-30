@@ -1,4 +1,5 @@
 import type { WardrobeItem, WardrobePageData, WardrobeStatCard } from "@/types/wardrobe";
+import type { WardrobeStats } from "@/types/dashboard";
 
 export const DEFAULT_WARDROBE_IMAGE =
   "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop";
@@ -161,6 +162,49 @@ export function buildCategoryCounts(
     ...cat,
     count: counts[cat.id] ?? 0,
   }));
+}
+
+/** Dashboard wardrobe overview — same counts as /wardrobe page. */
+export const EMPTY_DASHBOARD_WARDROBE_STATS: WardrobeStats = {
+  totalItems: 0,
+  tops: 0,
+  bottoms: 0,
+  dresses: 0,
+  shoes: 0,
+  jackets: 0,
+  accessories: 0,
+  isEmpty: true,
+  healthProgress: 0,
+};
+
+export function buildDashboardWardrobeStats(items: WardrobeItem[]): WardrobeStats {
+  if (items.length === 0) {
+    return { ...EMPTY_DASHBOARD_WARDROBE_STATS };
+  }
+
+  const count = (category: WardrobeItem["category"]) =>
+    items.filter((i) => i.category === category).length;
+
+  const health = Math.min(
+    100,
+    Math.round(
+      (items.filter((i) => i.imageUrl && i.brand && i.season.length > 0).length /
+        items.length) *
+        100
+    )
+  );
+
+  return {
+    totalItems: items.length,
+    tops: count("tops"),
+    bottoms: count("bottoms"),
+    dresses: count("dresses"),
+    shoes: count("shoes"),
+    jackets: count("jackets"),
+    accessories: count("accessories"),
+    isEmpty: false,
+    healthProgress: health,
+  };
 }
 
 export function buildWardrobeInsights(items: WardrobeItem[]) {

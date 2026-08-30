@@ -15,6 +15,7 @@ import { DailyTipCard } from "@/components/dashboard/DailyTipCard";
 import { SectionHeader } from "@/components/dashboard/DashboardCard";
 import { staggerContainer } from "@/components/dashboard/motion";
 import { scrollToDashboardSection } from "@/lib/navigation/scroll";
+import { EMPTY_DASHBOARD_WARDROBE_STATS } from "@/lib/wardrobe/mappers";
 import type { DashboardData } from "@/types/dashboard";
 
 interface DashboardContentProps {
@@ -55,7 +56,9 @@ export function DashboardContent({ data }: DashboardContentProps) {
             <RecommendationCard recommendation={data.recommendation} />
           </div>
           <div className="space-y-8 xl:col-span-2">
-            <WardrobeCard wardrobe={data.wardrobe} />
+            <WardrobeCard
+              initialWardrobe={data.wardrobe ?? EMPTY_DASHBOARD_WARDROBE_STATS}
+            />
             <DailyTipCard tip={data.dailyTip} />
           </div>
         </div>

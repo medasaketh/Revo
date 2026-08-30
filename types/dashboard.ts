@@ -58,9 +58,12 @@ export interface WardrobeStats {
   totalItems: number;
   tops: number;
   bottoms: number;
+  dresses: number;
   shoes: number;
+  jackets: number;
   accessories: number;
   isEmpty: boolean;
+  healthProgress: number;
 }
 
 export interface FashionInsight {

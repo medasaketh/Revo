@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   mockDashboardData,
   mergeDashboardUser,
 } from "@/constants/mockDashboard";
+import { getWardrobeItems } from "@/lib/wardrobe/service";
+import { buildDashboardWardrobeStats, EMPTY_DASHBOARD_WARDROBE_STATS } from "@/lib/wardrobe/mappers";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import type { Profile } from "@/types/database";
 
@@ -47,5 +50,19 @@ export default async function DashboardPage() {
     initials,
   });
 
-  return <DashboardContent data={dashboardData} />;
+  const db = createAdminClient() ?? supabase;
+  let wardrobeStats = EMPTY_DASHBOARD_WARDROBE_STATS;
+
+  try {
+    const items = await getWardrobeItems(db, user.id);
+    wardrobeStats = buildDashboardWardrobeStats(items);
+  } catch (err) {
+    console.error("[dashboard] Failed to load wardrobe stats:", err);
+  }
+
+  return (
+    <DashboardContent
+      data={{ ...dashboardData, wardrobe: wardrobeStats }}
+    />
+  );
 }
