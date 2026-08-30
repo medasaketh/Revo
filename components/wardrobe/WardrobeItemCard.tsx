@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WardrobeItemImage } from "@/components/wardrobe/WardrobeItemImage";
 import type { WardrobeItem, WardrobeViewMode } from "@/types/wardrobe";
 
 interface WardrobeItemCardProps {
@@ -43,11 +43,10 @@ export function WardrobeItemCard({
           isCompact && "aspect-square"
         )}
       >
-        <Image
+        <WardrobeItemImage
           src={item.imageUrl}
           alt={item.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, 240px"
         />
         {!isList && (

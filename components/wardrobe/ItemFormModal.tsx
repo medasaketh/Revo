@@ -7,54 +7,114 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { WardrobeFilterOption, WardrobePageData } from "@/types/wardrobe";
+import type { WardrobeItemInput } from "@/schemas/wardrobe";
+import type { WardrobeFilterOption, WardrobeItem, WardrobePageData } from "@/types/wardrobe";
 
-interface AddItemModalProps {
+export interface ItemFormValues {
+  name: string;
+  category: string;
+  brand: string;
+  color: string;
+  colorHex: string;
+  imageUrl: string;
+  fabric: string;
+  price: string;
+  purchaseDate: string;
+  fitNotes: string;
+  selectedSeasons: string[];
+  selectedOccasions: string[];
+}
+
+const emptyForm: ItemFormValues = {
+  name: "",
+  category: "tops",
+  brand: "",
+  color: "",
+  colorHex: "#888888",
+  imageUrl: "",
+  fabric: "",
+  price: "",
+  purchaseDate: "",
+  fitNotes: "",
+  selectedSeasons: [],
+  selectedOccasions: [],
+};
+
+function itemToForm(item: WardrobeItem): ItemFormValues {
+  return {
+    name: item.name,
+    category: item.category,
+    brand: item.brand,
+    color: item.color,
+    colorHex: item.colorHex,
+    imageUrl: item.imageUrl.startsWith("https://images.unsplash.com/photo-1523381295211")
+      ? ""
+      : item.imageUrl,
+    fabric: item.fabric ?? "",
+    price: item.price ? String(item.price) : "",
+    purchaseDate: item.purchaseDate ?? "",
+    fitNotes: item.fitNotes ?? "",
+    selectedSeasons: [...item.season],
+    selectedOccasions: [...item.occasions],
+  };
+}
+
+function formToInput(form: ItemFormValues): WardrobeItemInput {
+  return {
+    name: form.name.trim(),
+    category: form.category as WardrobeItemInput["category"],
+    brand: form.brand.trim() || null,
+    color: form.color.trim() || null,
+    colorHex: form.colorHex || "#888888",
+    imageUrl: form.imageUrl.trim() || null,
+    fabric: form.fabric.trim() || null,
+    season: form.selectedSeasons as WardrobeItemInput["season"],
+    occasions: form.selectedOccasions as WardrobeItemInput["occasions"],
+    price: form.price ? Number(form.price) : null,
+    purchaseDate: form.purchaseDate.trim() || null,
+    fitNotes: form.fitNotes.trim() || null,
+  };
+}
+
+interface ItemFormModalProps {
   open: boolean;
+  mode: "add" | "edit";
+  editItem?: WardrobeItem | null;
   onClose: () => void;
+  onSave: (input: WardrobeItemInput) => Promise<void>;
   steps: string[];
   seasons: WardrobeFilterOption[];
   occasions: WardrobeFilterOption[];
   categories: WardrobePageData["categories"];
 }
 
-export function AddItemModal({
+export function ItemFormModal({
   open,
+  mode,
+  editItem,
   onClose,
+  onSave,
   steps,
   seasons,
   occasions,
   categories,
-}: AddItemModalProps) {
+}: ItemFormModalProps) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
-    name: "",
-    category: "tops",
-    brand: "",
-    color: "",
-    fabric: "",
-    selectedSeasons: [] as string[],
-    selectedOccasions: [] as string[],
-  });
+  const [form, setForm] = useState<ItemFormValues>(emptyForm);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
-      setStep(0);
+      setStep(mode === "edit" ? 1 : 0);
+      setForm(editItem ? itemToForm(editItem) : emptyForm);
     } else {
       document.body.style.overflow = "";
     }
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
-
-  const handleSave = () => {
-    toast.success("Item saved (preview)", {
-      description: "Backend integration coming soon.",
-    });
-    onClose();
-  };
+  }, [open, mode, editItem]);
 
   const toggleArray = (
     key: "selectedSeasons" | "selectedOccasions",
@@ -67,6 +127,27 @@ export function AddItemModal({
         : [...prev[key], id],
     }));
   };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast.error("Item name is required");
+      setStep(1);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await onSave(formToInput(form));
+      toast.success(mode === "edit" ? "Item updated" : "Item saved");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const title = mode === "edit" ? "Edit Clothing Item" : "Add Clothing Item";
 
   return (
     <AnimatePresence>
@@ -87,7 +168,7 @@ export function AddItemModal({
           >
             <div className="flex items-center justify-between border-b border-[#202020] px-6 py-4">
               <div>
-                <h2 className="text-lg font-semibold">Add Clothing Item</h2>
+                <h2 className="text-lg font-semibold">{title}</h2>
                 <p className="text-xs text-gray-500">
                   Step {step + 1} of {steps.length} — {steps[step]}
                 </p>
@@ -102,9 +183,9 @@ export function AddItemModal({
             </div>
 
             <div className="flex gap-1 px-6 pt-4">
-              {steps.map((_, i) => (
+              {steps.map((label, i) => (
                 <div
-                  key={steps[i]}
+                  key={label}
                   className={cn(
                     "h-1 flex-1 rounded-full transition-colors",
                     i <= step ? "bg-[#D4C4A8]" : "bg-[#202020]"
@@ -115,30 +196,37 @@ export function AddItemModal({
 
             <div className="flex-1 overflow-y-auto p-6">
               {step === 0 && (
-                <div className="space-y-4 text-center">
-                  <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-3xl border border-dashed border-[#D4C4A8]/30 bg-[#D4C4A8]/5">
-                    <ImagePlus className="h-10 w-10 text-[#D4C4A8]" />
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-3xl border border-dashed border-[#D4C4A8]/30 bg-[#D4C4A8]/5">
+                      <ImagePlus className="h-10 w-10 text-[#D4C4A8]" />
+                    </div>
+                    <p className="mt-4 text-sm text-gray-400">
+                      Photo upload coming soon — paste an image URL for now
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-400">
-                    Drag & drop or upload a photo of your item
-                  </p>
+                  <div>
+                    <label className="mb-1.5 block text-xs text-gray-500">
+                      Image URL (optional)
+                    </label>
+                    <Input
+                      value={form.imageUrl}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, imageUrl: e.target.value }))
+                      }
+                      placeholder="https://..."
+                    />
+                  </div>
                   <div className="flex justify-center gap-2">
-                    <Button variant="secondary" size="sm">
+                    <Button variant="secondary" size="sm" disabled>
                       <Upload className="h-4 w-4" />
                       Upload
                     </Button>
-                    <Button variant="secondary" size="sm">
+                    <Button variant="secondary" size="sm" disabled>
                       <Camera className="h-4 w-4" />
                       Camera
                     </Button>
                   </div>
-                  <button
-                    type="button"
-                    className="text-xs text-gray-500 underline hover:text-white"
-                    onClick={() => setStep(1)}
-                  >
-                    Skip image for now
-                  </button>
                 </div>
               )}
 
@@ -146,7 +234,7 @@ export function AddItemModal({
                 <div className="space-y-4">
                   <div>
                     <label className="mb-1.5 block text-xs text-gray-500">
-                      Item Name
+                      Item Name *
                     </label>
                     <Input
                       value={form.name}
@@ -187,16 +275,30 @@ export function AddItemModal({
                       }
                     />
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs text-gray-500">
-                      Color
-                    </label>
-                    <Input
-                      value={form.color}
-                      onChange={(e) =>
-                        setForm((p) => ({ ...p, color: e.target.value }))
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1.5 block text-xs text-gray-500">
+                        Color
+                      </label>
+                      <Input
+                        value={form.color}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, color: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs text-gray-500">
+                        Price (₹)
+                      </label>
+                      <Input
+                        type="number"
+                        value={form.price}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, price: e.target.value }))
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -213,6 +315,21 @@ export function AddItemModal({
                         setForm((p) => ({ ...p, fabric: e.target.value }))
                       }
                       placeholder="Cotton, Linen, Denim..."
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs text-gray-500">
+                      Purchase Date
+                    </label>
+                    <Input
+                      value={form.purchaseDate}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          purchaseDate: e.target.value,
+                        }))
+                      }
+                      placeholder="Mar 2025"
                     />
                   </div>
                   <div>
@@ -270,7 +387,7 @@ export function AddItemModal({
                     {form.name || "New Item"}
                   </p>
                   <p className="mt-1 text-sm capitalize text-gray-500">
-                    {form.brand} · {form.category} · {form.color || "—"}
+                    {form.brand || "—"} · {form.category} · {form.color || "—"}
                   </p>
                 </div>
               )}
@@ -282,21 +399,35 @@ export function AddItemModal({
                   variant="secondary"
                   className="flex-1"
                   onClick={() => setStep((s) => s - 1)}
+                  disabled={saving}
                 >
                   Back
                 </Button>
               ) : (
-                <Button variant="secondary" className="flex-1" onClick={onClose}>
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={onClose}
+                  disabled={saving}
+                >
                   Cancel
                 </Button>
               )}
               {step < steps.length - 1 ? (
-                <Button className="flex-1" onClick={() => setStep((s) => s + 1)}>
+                <Button
+                  className="flex-1"
+                  onClick={() => setStep((s) => s + 1)}
+                  disabled={saving}
+                >
                   Continue
                 </Button>
               ) : (
-                <Button className="flex-1" onClick={handleSave}>
-                  Save Item
+                <Button
+                  className="flex-1"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : mode === "edit" ? "Update Item" : "Save Item"}
                 </Button>
               )}
             </div>
@@ -306,3 +437,6 @@ export function AddItemModal({
     </AnimatePresence>
   );
 }
+
+/** @deprecated Use ItemFormModal */
+export { ItemFormModal as AddItemModal };

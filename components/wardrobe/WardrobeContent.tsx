@@ -3,8 +3,15 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useWardrobe } from "@/hooks/useWardrobe";
+import {
+  buildCategoryCounts,
+  buildWardrobeInsights,
+  buildWardrobeStats,
+} from "@/lib/wardrobe/mappers";
 import { WardrobeHeader } from "@/components/wardrobe/WardrobeHeader";
 import { WardrobeStatsCards } from "@/components/wardrobe/WardrobeStatsCards";
 import { WardrobeSearchBar } from "@/components/wardrobe/WardrobeSearchBar";
@@ -15,13 +22,14 @@ import {
 } from "@/components/wardrobe/WardrobeViewToggle";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import { ItemDrawer } from "@/components/wardrobe/ItemDrawer";
-import { AddItemModal } from "@/components/wardrobe/AddItemModal";
+import { ItemFormModal } from "@/components/wardrobe/ItemFormModal";
 import { WardrobeEmptyState } from "@/components/wardrobe/WardrobeEmptyState";
 import {
   WardrobeAiPlaceholders,
   WardrobeInsightsCards,
 } from "@/components/wardrobe/WardrobeInsights";
 import { FloatingActionButton } from "@/components/wardrobe/FloatingActionButton";
+import type { WardrobeItemInput } from "@/schemas/wardrobe";
 import type {
   WardrobeCategory,
   WardrobeItem,
@@ -31,11 +39,19 @@ import type {
 } from "@/types/wardrobe";
 
 interface WardrobeContentProps {
-  data: WardrobePageData;
+  config: Omit<WardrobePageData, "items">;
 }
 
-export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
-  const [items, setItems] = useState(initialData.items);
+export function WardrobeContent({ config }: WardrobeContentProps) {
+  const {
+    items,
+    loading,
+    createItem,
+    updateItem,
+    deleteItem,
+    toggleFavorite,
+  } = useWardrobe();
+
   const [activeCategory, setActiveCategory] = useState<WardrobeCategory>("all");
   const [activeSeason, setActiveSeason] = useState<string | null>(null);
   const [activeOccasion, setActiveOccasion] = useState<string | null>(null);
@@ -45,8 +61,17 @@ export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<WardrobeViewMode>("grid");
   const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
-  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"add" | "edit">("add");
+  const [editItem, setEditItem] = useState<WardrobeItem | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const categories = useMemo(
+    () => buildCategoryCounts(items, config),
+    [items, config]
+  );
+  const overviewStats = useMemo(() => buildWardrobeStats(items, config), [items, config]);
+  const insights = useMemo(() => buildWardrobeInsights(items), [items]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -74,7 +99,7 @@ export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
         !activeSeason || item.season.includes(activeSeason as never);
       const matchesOccasion =
         !activeOccasion || item.occasions.includes(activeOccasion as never);
-      const colorFilter = initialData.colors.find((c) => c.id === activeColor);
+      const colorFilter = config.colors.find((c) => c.id === activeColor);
       const matchesColor =
         !colorFilter ||
         item.color.toLowerCase() === colorFilter.label.toLowerCase();
@@ -125,27 +150,73 @@ export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
     favoritesOnly,
     search,
     activeSort,
-    initialData.colors,
+    config.colors,
   ]);
 
-  const toggleFavorite = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
-      )
-    );
+  const openAddModal = () => {
+    setFormMode("add");
+    setEditItem(null);
+    setFormOpen(true);
+  };
+
+  const openEditModal = (item: WardrobeItem) => {
+    setFormMode("edit");
+    setEditItem(item);
+    setFormOpen(true);
+  };
+
+  const handleSave = async (input: WardrobeItemInput) => {
+    if (formMode === "edit" && editItem) {
+      const updated = await updateItem(editItem.id, input);
+      if (selectedItem?.id === editItem.id) {
+        setSelectedItem(updated);
+      }
+    } else {
+      await createItem(input);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteItem(id);
+      setSelectedItem(null);
+      toast.success("Item deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Delete failed");
+    }
+  };
+
+  const handleToggleFavorite = (id: string) => {
+    toggleFavorite(id);
     setSelectedItem((prev) =>
       prev?.id === id ? { ...prev, isFavorite: !prev.isFavorite } : prev
     );
   };
 
-  const openAddModal = () => setAddModalOpen(true);
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-24 rounded-3xl bg-[#111111]" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-24 rounded-2xl bg-[#111111]" />
+          ))}
+        </div>
+        <div className="h-12 rounded-2xl bg-[#111111]" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="aspect-[4/5] rounded-2xl bg-[#111111]" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="space-y-8 pb-24 lg:pb-8">
-        <WardrobeHeader header={initialData.header} onAddItem={openAddModal} />
-        <WardrobeStatsCards stats={initialData.overviewStats} />
+        <WardrobeHeader header={config.header} onAddItem={openAddModal} />
+        <WardrobeStatsCards stats={overviewStats} />
         <WardrobeSearchBar value={search} onChange={setSearch} />
 
         <div className="flex items-center justify-between gap-3">
@@ -181,11 +252,11 @@ export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
               className="overflow-hidden"
             >
               <WardrobeFilterBar
-                categories={initialData.categories}
-                seasons={initialData.seasons}
-                occasions={initialData.occasions}
-                colors={initialData.colors}
-                sortOptions={initialData.sortOptions}
+                categories={categories}
+                seasons={config.seasons}
+                occasions={config.occasions}
+                colors={config.colors}
+                sortOptions={config.sortOptions}
                 activeCategory={activeCategory}
                 activeSeason={activeSeason}
                 activeOccasion={activeOccasion}
@@ -225,29 +296,34 @@ export function WardrobeContent({ data: initialData }: WardrobeContentProps) {
                 index={index}
                 view={view}
                 onSelect={setSelectedItem}
-                onToggleFavorite={toggleFavorite}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>
         )}
 
-        <WardrobeInsightsCards insights={initialData.insights} />
-        <WardrobeAiPlaceholders features={initialData.aiFeatures} />
+        <WardrobeInsightsCards insights={insights} />
+        <WardrobeAiPlaceholders features={config.aiFeatures} />
       </div>
 
       <ItemDrawer
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={handleToggleFavorite}
+        onEdit={openEditModal}
+        onDelete={handleDelete}
       />
 
-      <AddItemModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        steps={initialData.addItemSteps}
-        seasons={initialData.seasons}
-        occasions={initialData.occasions}
-        categories={initialData.categories}
+      <ItemFormModal
+        open={formOpen}
+        mode={formMode}
+        editItem={editItem}
+        onClose={() => setFormOpen(false)}
+        onSave={handleSave}
+        steps={config.addItemSteps}
+        seasons={config.seasons}
+        occasions={config.occasions}
+        categories={categories}
       />
 
       <FloatingActionButton onAddItem={openAddModal} />

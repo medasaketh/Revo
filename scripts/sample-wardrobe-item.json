@@ -1,0 +1,14 @@
+{
+  "name": "fashion",
+  "category": "tops",
+  "brand": "h&m",
+  "color": "red",
+  "colorHex": "#888888",
+  "imageUrl": "https://share.google/T1G7R4rgw3EowPwSb",
+  "fabric": "Cotton",
+  "season": ["winter"],
+  "occasions": ["casual"],
+  "price": 1900,
+  "purchaseDate": "Mar 2026",
+  "fitNotes": null
+}

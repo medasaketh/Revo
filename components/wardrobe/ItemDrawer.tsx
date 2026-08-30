@@ -1,21 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { WardrobeItemImage } from "@/components/wardrobe/WardrobeItemImage";
 import type { WardrobeItem } from "@/types/wardrobe";
 
 interface ItemDrawerProps {
   item: WardrobeItem | null;
   onClose: () => void;
   onToggleFavorite: (id: string) => void;
+  onEdit: (item: WardrobeItem) => void;
+  onDelete: (id: string) => void;
 }
 
-export function ItemDrawer({ item, onClose, onToggleFavorite }: ItemDrawerProps) {
+export function ItemDrawer({
+  item,
+  onClose,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+}: ItemDrawerProps) {
   useEffect(() => {
     if (item) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
@@ -55,11 +63,9 @@ export function ItemDrawer({ item, onClose, onToggleFavorite }: ItemDrawerProps)
 
             <div className="flex-1 overflow-y-auto p-5">
               <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
-                <Image
+                <WardrobeItemImage
                   src={item.imageUrl}
                   alt={item.name}
-                  fill
-                  className="object-cover"
                   sizes="400px"
                 />
               </div>
@@ -158,7 +164,10 @@ export function ItemDrawer({ item, onClose, onToggleFavorite }: ItemDrawerProps)
               <Button
                 variant="secondary"
                 className="flex-1"
-                onClick={() => toast.message("Edit coming soon")}
+                onClick={() => {
+                  onEdit(item);
+                  onClose();
+                }}
               >
                 Edit
               </Button>
@@ -171,7 +180,7 @@ export function ItemDrawer({ item, onClose, onToggleFavorite }: ItemDrawerProps)
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => toast.message("Delete — preview only")}
+                onClick={() => onDelete(item.id)}
               >
                 <Trash2 className="h-4 w-4 text-red-400" />
               </Button>
