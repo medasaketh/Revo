@@ -103,6 +103,46 @@ export interface Database {
           updated_at?: string;
         };
       };
+      outfits: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string | null;
+          occasion: string | null;
+          worn_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name?: string | null;
+          occasion?: string | null;
+          worn_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string | null;
+          occasion?: string | null;
+          worn_at?: string;
+          created_at?: string;
+        };
+      };
+      outfit_items: {
+        Row: {
+          outfit_id: string;
+          wardrobe_item_id: string;
+        };
+        Insert: {
+          outfit_id: string;
+          wardrobe_item_id: string;
+        };
+        Update: {
+          outfit_id?: string;
+          wardrobe_item_id?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

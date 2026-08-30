@@ -6,6 +6,7 @@ export { WardrobeFilterBar } from "./WardrobeFilterBar";
 export { WardrobeViewToggle, getGridClassName } from "./WardrobeViewToggle";
 export { WardrobeItemCard } from "./WardrobeItemCard";
 export { ItemDrawer } from "./ItemDrawer";
+export { UseInOutfitModal } from "./UseInOutfitModal";
 export { ItemFormModal, AddItemModal } from "./ItemFormModal";
 export { WardrobeItemImage } from "./WardrobeItemImage";
 export { WardrobeEmptyState } from "./WardrobeEmptyState";

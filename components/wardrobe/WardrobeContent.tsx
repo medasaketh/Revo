@@ -23,6 +23,7 @@ import {
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import { ItemDrawer } from "@/components/wardrobe/ItemDrawer";
 import { ItemFormModal } from "@/components/wardrobe/ItemFormModal";
+import { UseInOutfitModal } from "@/components/wardrobe/UseInOutfitModal";
 import { WardrobeEmptyState } from "@/components/wardrobe/WardrobeEmptyState";
 import {
   WardrobeAiPlaceholders,
@@ -50,6 +51,7 @@ export function WardrobeContent({ config }: WardrobeContentProps) {
     updateItem,
     deleteItem,
     toggleFavorite,
+    logOutfit,
   } = useWardrobe();
 
   const [activeCategory, setActiveCategory] = useState<WardrobeCategory>("all");
@@ -65,6 +67,8 @@ export function WardrobeContent({ config }: WardrobeContentProps) {
   const [formMode, setFormMode] = useState<"add" | "edit">("add");
   const [editItem, setEditItem] = useState<WardrobeItem | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [outfitOpen, setOutfitOpen] = useState(false);
+  const [outfitAnchor, setOutfitAnchor] = useState<WardrobeItem | null>(null);
 
   const categories = useMemo(
     () => buildCategoryCounts(items, config),
@@ -173,6 +177,19 @@ export function WardrobeContent({ config }: WardrobeContentProps) {
       }
     } else {
       await createItem(input);
+    }
+  };
+
+  const openOutfitModal = (item: WardrobeItem) => {
+    setOutfitAnchor(item);
+    setOutfitOpen(true);
+  };
+
+  const handleLogOutfit = async (input: Parameters<typeof logOutfit>[0]) => {
+    const result = await logOutfit(input);
+    if (selectedItem) {
+      const updated = result.updatedItems.find((i) => i.id === selectedItem.id);
+      if (updated) setSelectedItem(updated);
     }
   };
 
@@ -312,6 +329,16 @@ export function WardrobeContent({ config }: WardrobeContentProps) {
         onToggleFavorite={handleToggleFavorite}
         onEdit={openEditModal}
         onDelete={handleDelete}
+        onUseInOutfit={openOutfitModal}
+      />
+
+      <UseInOutfitModal
+        open={outfitOpen}
+        anchorItem={outfitAnchor}
+        items={items}
+        occasions={config.occasions}
+        onClose={() => setOutfitOpen(false)}
+        onLog={handleLogOutfit}
       />
 
       <ItemFormModal

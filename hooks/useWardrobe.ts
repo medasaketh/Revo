@@ -11,6 +11,9 @@ import {
   deleteWardrobeItem,
   WardrobeApiError,
 } from "@/lib/wardrobe/client";
+import { logOutfit as logOutfitApi } from "@/lib/outfit/client";
+import type { LogOutfitInput } from "@/schemas/outfit";
+import type { LogOutfitResult } from "@/types/outfit";
 
 export function useWardrobe() {
   const [items, setItems] = useState<WardrobeItem[]>([]);
@@ -79,6 +82,19 @@ export function useWardrobe() {
     }
   };
 
+  const logOutfit = async (input: LogOutfitInput): Promise<LogOutfitResult> => {
+    const result = await logOutfitApi(input);
+
+    setItems((prev) =>
+      prev.map((item) => {
+        const updated = result.updatedItems.find((u) => u.id === item.id);
+        return updated ?? item;
+      })
+    );
+
+    return result;
+  };
+
   return {
     items,
     loading,
@@ -87,6 +103,7 @@ export function useWardrobe() {
     updateItem,
     deleteItem,
     toggleFavorite,
+    logOutfit,
     setItems,
   };
 }

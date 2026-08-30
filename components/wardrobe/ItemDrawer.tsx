@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles, Trash2, X } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { WardrobeItemImage } from "@/components/wardrobe/WardrobeItemImage";
@@ -15,6 +14,7 @@ interface ItemDrawerProps {
   onToggleFavorite: (id: string) => void;
   onEdit: (item: WardrobeItem) => void;
   onDelete: (id: string) => void;
+  onUseInOutfit: (item: WardrobeItem) => void;
 }
 
 export function ItemDrawer({
@@ -23,6 +23,7 @@ export function ItemDrawer({
   onToggleFavorite,
   onEdit,
   onDelete,
+  onUseInOutfit,
 }: ItemDrawerProps) {
   useEffect(() => {
     if (item) document.body.style.overflow = "hidden";
@@ -173,7 +174,7 @@ export function ItemDrawer({
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => toast.message("Use in outfit — coming soon")}
+                onClick={() => onUseInOutfit(item)}
               >
                 Use in Outfit
               </Button>
